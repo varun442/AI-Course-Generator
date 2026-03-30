@@ -48,55 +48,53 @@ function CourseLayout({ params: paramsPromise }) {
       return;
     }
 
-    for (const [index, chapter] of chapters.entries()) {
+    // Process all chapters in parallel
+    const chapterPromises = chapters.map(async (chapter, index) => {
       console.log(`[GenerateChapterContent] Processing chapter ${index + 1}/${chapters.length}:`, chapter?.name);
 
       const PROMPT='Explain the concept in Detail on Topic:'+course?.name+', Chapter:'+chapter?.name+', in JSON Format with list of array with field as title, description in detail, Code Example(Code field in <precode> format) if applicable';
-      console.log(`[GenerateChapterContent] Prompt for chapter ${index + 1}:`, PROMPT);
 
-      try {
-        let videoId='';
+      // Run YouTube fetch and AI generation in parallel
+      const [videoResult, aiResult] = await Promise.allSettled([
+        service.getVideos(course?.name+':'+chapter?.name).catch(err => {
+          console.warn(`[GenerateChapterContent] Video fetch failed for chapter ${index + 1}:`, err?.message);
+          return [];
+        }),
+        GenerateChapterContent_AI.sendMessage(PROMPT),
+      ]);
 
-        console.log(`[GenerateChapterContent] Fetching video for: ${course?.name}:${chapter?.name}`);
-        let videoSnippet = null;
-        try {
-          const videoResp = await service.getVideos(course?.name+':'+chapter?.name);
-          videoId = videoResp[0]?.id?.videoId;
-          videoSnippet = videoResp[0]?.snippet ?? null;
-          console.log(`[GenerateChapterContent] Video ID: ${videoId}`);
-        } catch (videoErr) {
-          console.warn(`[GenerateChapterContent] Video fetch failed for chapter ${index + 1}:`, videoErr?.message || videoErr);
-        }
+      const videoResp = videoResult.status === 'fulfilled' ? videoResult.value : [];
+      const videoId = videoResp[0]?.id?.videoId || '';
+      const videoSnippet = videoResp[0]?.snippet ?? null;
 
-        console.log(`[GenerateChapterContent] Sending AI request for chapter ${index + 1}...`);
-        const result = await GenerateChapterContent_AI.sendMessage(PROMPT);
-        const rawText = result?.response?.text();
-        console.log(`[GenerateChapterContent] AI raw response for chapter ${index + 1}:`, rawText);
-
-        const content = JSON.parse(rawText);
-        console.log(`[GenerateChapterContent] Parsed content for chapter ${index + 1}:`, content);
-
-        console.log(`[GenerateChapterContent] Saving chapter ${index + 1} to DB...`);
-        const resp = await db.insert(Chapters).values({
-          chapterId: index,
-          courseId: course?.courseId,
-          content: { ...content, videoSnippet },
-          videoId: videoId
-        }).returning({id: Chapters.id});
-        console.log(`[GenerateChapterContent] Chapter ${index + 1} saved. DB response:`, resp);
-
-      } catch(e) {
-        console.error(`[GenerateChapterContent] Error on chapter ${index + 1}:`, e?.message || e);
-        console.error(`[GenerateChapterContent] Error details:`, e);
+      const result = aiResult.status === 'fulfilled' ? aiResult.value : null;
+      if (!result) {
+        console.error(`[GenerateChapterContent] AI failed for chapter ${index + 1}`);
+        return;
       }
 
-      if (index === chapters.length - 1) {
-        console.log("[GenerateChapterContent] All chapters done. Updating course publish status...");
-        await db.update(CourseList).set({ publish: true });
-        console.log("[GenerateChapterContent] Redirecting to finish page...");
-        setLoading(false);
-        router.replace('/create-course/'+course?.courseId+"/finish");
-      }
+      const rawText = result?.response?.text();
+      const content = JSON.parse(rawText);
+      console.log(`[GenerateChapterContent] Chapter ${index + 1} content ready, saving to DB...`);
+
+      await db.insert(Chapters).values({
+        chapterId: index,
+        courseId: course?.courseId,
+        content: { ...content, videoSnippet },
+        videoId: videoId
+      }).returning({id: Chapters.id});
+      console.log(`[GenerateChapterContent] Chapter ${index + 1} saved.`);
+    });
+
+    try {
+      await Promise.all(chapterPromises);
+      console.log("[GenerateChapterContent] All chapters done. Updating course publish status...");
+      await db.update(CourseList).set({ publish: true });
+      setLoading(false);
+      router.replace('/create-course/'+course?.courseId+"/finish");
+    } catch(e) {
+      console.error(`[GenerateChapterContent] Error:`, e?.message || e);
+      setLoading(false);
     }
   }
   return (
