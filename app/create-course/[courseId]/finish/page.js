@@ -7,16 +7,18 @@ import { and, eq } from 'drizzle-orm';
 import React, { useEffect, useState } from 'react'
 import CourseBasicInfo from '../_components/CourseBasicInfo';
 import { useRouter } from 'next/navigation';
-import { HiOutlineClipboardDocumentCheck } from "react-icons/hi2";
+import { HiOutlineClipboardDocumentCheck, HiCheck } from "react-icons/hi2";
 
-function FinishScreen({params}) {
+function FinishScreen({params: paramsPromise}) {
+    const params = React.use(paramsPromise);
     const { user } = useUser();
     const [course,setCourse]=useState([]);
+    const [copied,setCopied]=useState(false);
     const router=useRouter();
     useEffect(() => {
       params && GetCourse();
     }, [params,user])
-  
+
     const GetCourse = async () => {
       const result = await db.select().from(CourseList)
         .where(and(eq(CourseList.courseId, params?.courseId),
@@ -31,11 +33,27 @@ function FinishScreen({params}) {
        
         <CourseBasicInfo course={course} refreshData={()=>console.log()} />
        <h2 className='mt-3'>Course URL:</h2>
-       <h2 className='text-center text-gray-400 
-       border p-2 round flex gap-5 items-center'>{process.env.NEXT_PUBLIC_HOST_NAME}/course/{course?.courseId} 
-       <HiOutlineClipboardDocumentCheck
-        className='h-5 w-5 cursor-pointer' 
-        onClick={async()=>await navigator.clipboard.writeText(process.env.NEXT_PUBLIC_HOST_NAME+"/course/"+course?.courseId)} /></h2>
+       <div className='text-center text-gray-400
+       border p-2 rounded flex gap-3 items-center'>
+        <a href={process.env.NEXT_PUBLIC_HOST_NAME+"/course/"+course?.courseId}
+          target='_blank' rel='noopener noreferrer'
+          className='flex-1 text-left hover:text-primary hover:underline transition-colors truncate'>
+          {process.env.NEXT_PUBLIC_HOST_NAME}/course/{course?.courseId}
+        </a>
+        {copied ? (
+          <span className='flex items-center gap-1 text-green-500 text-sm'>
+            <HiCheck className='h-5 w-5' /> Copied!
+          </span>
+        ) : (
+          <HiOutlineClipboardDocumentCheck
+            className='h-5 w-5 cursor-pointer hover:text-primary transition-colors flex-shrink-0'
+            onClick={async()=>{
+              await navigator.clipboard.writeText(process.env.NEXT_PUBLIC_HOST_NAME+"/course/"+course?.courseId);
+              setCopied(true);
+              setTimeout(()=>setCopied(false), 2000);
+            }} />
+        )}
+       </div>
         
     </div>
   )
