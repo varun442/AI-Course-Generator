@@ -6,8 +6,10 @@ import { and, eq } from 'drizzle-orm';
 
 import React, { useEffect, useState } from 'react'
 import CourseBasicInfo from '../_components/CourseBasicInfo';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { HiOutlineClipboardDocumentCheck, HiCheck } from "react-icons/hi2";
+import { Button } from '@/components/ui/button';
 
 function FinishScreen({params: paramsPromise}) {
     const params = React.use(paramsPromise);
@@ -54,7 +56,19 @@ function FinishScreen({params: paramsPromise}) {
             }} />
         )}
        </div>
-        
+
+       <div className='flex flex-wrap gap-3 mt-5 justify-center'>
+        <Link href={'/course/'+course?.courseId+'/start'}>
+          <Button>View Course</Button>
+        </Link>
+        <Link href='/dashboard'>
+          <Button variant='outline'>Go to Dashboard</Button>
+        </Link>
+        <Link href='/create-course'>
+          <Button variant='outline'>Create Another</Button>
+        </Link>
+       </div>
+
     </div>
   )
 }

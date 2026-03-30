@@ -8,6 +8,8 @@ import { CourseList } from '@/configs/schema'
 import { eq } from 'drizzle-orm'
 import React, { useEffect, useState } from 'react'
 import Spinner from '@/app/_components/Spinner'
+import Link from 'next/link'
+import { HiArrowLeft } from 'react-icons/hi2'
 
 function Course({params: paramsPromise}) {
     const params = React.use(paramsPromise);
@@ -37,6 +39,9 @@ function Course({params: paramsPromise}) {
     <div>
         <Header/>
         <div className='px-10 p-10 md:px-20 lg:px-44'>
+          <Link href='/dashboard/explore' className='flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-4'>
+            <HiArrowLeft /> Back to Explore
+          </Link>
           <CourseBasicInfo course={course} edit={false} />
           <CourseDetails course={course} />
           <ChapterList course={course} edit={false}/>

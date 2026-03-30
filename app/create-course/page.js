@@ -13,6 +13,8 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "@/configs/db";
+import Link from "next/link";
+import { HiArrowLeft } from "react-icons/hi2";
 
 const CreateCourse = () => {
   const StepperOptions = [
@@ -112,6 +114,9 @@ const CreateCourse = () => {
     <div>
       {/* Stepper */}
       <div className="flex flex-col justify-center items-center mt-10">
+        <Link href="/dashboard" className="self-start ml-10 md:ml-20 lg:ml-44 flex items-center gap-2 text-sm text-gray-500 hover:text-primary transition-colors mb-4">
+          <HiArrowLeft /> Back to Dashboard
+        </Link>
         <h2 className="text-4xl text-primary font-medium">Create Course</h2>
         <div className="flex mt-10">
           {StepperOptions.map((item, index) => (
