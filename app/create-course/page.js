@@ -10,7 +10,6 @@ import { GenerateCourseLayout_AI } from "@/configs/AiModel";
 import LoadingDialog from "./_components/LoadingDialog";
 import { CourseList } from "@/configs/schema";
 import { useUser } from "@clerk/nextjs";
-import { UserProfile } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 import { v4 as uuidv4 } from 'uuid';
 import { db } from "@/configs/db";
@@ -60,34 +59,53 @@ const CreateCourse = () => {
   };
 
   const GenerateCourseLayout = async () => {
+    console.log("[GenerateCourseLayout] Starting...");
+    console.log("[GenerateCourseLayout] User input:", userCourseInput);
     setLoading(true)
     const BASIC_PROMPT = 'Generate A Course Tutorial on Following Detail With field as Course Name, Description, Along with Chapter'
     const USER_INPUT_PROMPT = `Category: ${userCourseInput?.category}, Topic: ${userCourseInput?.topic}, Level:${userCourseInput?.level}, Duration: ${userCourseInput?.duration}, NoOf Chapters:${userCourseInput?.noOfChapters}`
     const FINAL_PROMPT = BASIC_PROMPT + USER_INPUT_PROMPT
-    console.log(FINAL_PROMPT);
-    
-    const result = await GenerateCourseLayout_AI.sendMessage(FINAL_PROMPT);
-    console.log(JSON.parse(result.response?.text()))
-    setLoading(false)
-    SaveCourseLayoutInDb(JSON.parse(result.response?.text()))
+    console.log("[GenerateCourseLayout] Final prompt:", FINAL_PROMPT);
+
+    try {
+      const result = await GenerateCourseLayout_AI.sendMessage(FINAL_PROMPT);
+      const responseText = result.response?.text();
+      console.log("[GenerateCourseLayout] Raw AI response:", responseText);
+      const parsed = JSON.parse(responseText);
+      console.log("[GenerateCourseLayout] Parsed response:", parsed);
+      setLoading(false)
+      SaveCourseLayoutInDb(parsed)
+    } catch (err) {
+      console.error("[GenerateCourseLayout] Error:", err?.message || err);
+      setLoading(false)
+    }
   }
-  
+
   const SaveCourseLayoutInDb = async (courseLayout) => {
     var id = uuidv4();
+    console.log("[SaveCourseLayoutInDb] Saving course with id:", id);
+    console.log("[SaveCourseLayoutInDb] Course layout:", courseLayout);
+    console.log("[SaveCourseLayoutInDb] User:", user?.primaryEmailAddress?.emailAddress);
     setLoading(true)
-    const res = await db.insert(CourseList).values({
-      courseId: id,
-      name:userCourseInput?.topic,
-      level:userCourseInput?.level,
-      category:userCourseInput?.category,
-      courseOutput:courseLayout,
-      createdBy:user?.primaryEmailAddress?.emailAddress,
-      userName:user?.fullName,
-      userProfileImage:user?.imageUrl
-    })
-    console.log("Finish");
-    setLoading(false);
-    router.replace('/create-course/'+id)
+    try {
+      const res = await db.insert(CourseList).values({
+        courseId: id,
+        name:userCourseInput?.topic,
+        level:userCourseInput?.level,
+        category:userCourseInput?.category,
+        courseOutput:courseLayout,
+        createdBy:user?.primaryEmailAddress?.emailAddress,
+        userName:user?.fullName,
+        userProfileImage:user?.imageUrl
+      })
+      console.log("[SaveCourseLayoutInDb] DB insert result:", res);
+      console.log("[SaveCourseLayoutInDb] Done, redirecting to /create-course/" + id);
+      setLoading(false);
+      router.replace('/create-course/'+id)
+    } catch (err) {
+      console.error("[SaveCourseLayoutInDb] DB insert error:", err?.message || err);
+      setLoading(false);
+    }
   }
   
   return (
@@ -97,7 +115,7 @@ const CreateCourse = () => {
         <h2 className="text-4xl text-primary font-medium">Create Course</h2>
         <div className="flex mt-10">
           {StepperOptions.map((item, index) => (
-            <div className="flex items-center">
+            <div key={item.id} className="flex items-center">
               <div className="flex flex-col items-center w-[10px] md:w-[100px]">
                 <div
                   className={`bg-gray-200 p-3 rounded-full text-white ${

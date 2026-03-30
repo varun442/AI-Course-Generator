@@ -9,7 +9,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Progress } from "@/components/ui/progress";
 import { UserCourseListContext } from '@/app/_context/UserCourseListContext';
-import { BsFillSuitcaseLgFill } from "react-icons/bs";
+
 
 const SideBar = () => {
   const { userCourseList } = useContext(UserCourseListContext);
@@ -32,12 +32,6 @@ const SideBar = () => {
       name: 'Upgrade',
       icon: <GrUpgrade />,
       path: '/dashboard/upgrade',
-    },
-    {
-      id: 4,
-      name: 'Jobs',
-      icon: <BsFillSuitcaseLgFill />      ,
-      path: '/dashboard/jobs',
     },
     {
       id: 5,

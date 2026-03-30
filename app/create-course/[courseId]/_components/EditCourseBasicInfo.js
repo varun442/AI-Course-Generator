@@ -26,10 +26,16 @@ function EditCourseBasicInfo({course,refreshData}) {
         setDescription(course?.courseOutput?.course?.description);
     },[course])
     const onUpdateHandler=async()=>{
-        course.courseOutput.course.name=name;
-        course.courseOutput.course.description=description;
+        const updatedCourseOutput = {
+            ...course?.courseOutput,
+            course: {
+                ...course?.courseOutput?.course,
+                name,
+                description,
+            }
+        };
         const result=await db.update(CourseList).set({
-            courseOutput:course?.courseOutput
+            courseOutput: updatedCourseOutput
         }).where(eq(CourseList?.id,course?.id))
         .returning({id:CourseList.id});
 
@@ -59,7 +65,7 @@ function EditCourseBasicInfo({course,refreshData}) {
         </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-            <DialogClose>
+            <DialogClose asChild>
                 <Button onClick={onUpdateHandler}>Update</Button>
             </DialogClose>
         </DialogFooter>

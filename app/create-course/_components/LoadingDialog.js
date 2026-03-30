@@ -19,11 +19,11 @@ const LoadingDialog = ({loading}) => {
         <AlertDialogContent>
           <AlertDialogTitle/>
           <AlertDialogHeader>
-            <AlertDialogDescription>
-                <div className="flex flex-col items-center py-10">
+            <AlertDialogDescription asChild>
+                <span className="flex flex-col items-center py-10">
                     <Image alt="placeholder"  src="/loading.gif" width={100} height={100} />
-                    <h2>Please wait... AI is working on your request</h2>
-                </div>
+                    <span className="text-lg font-medium mt-3">Please wait... AI is working on your request</span>
+                </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
         </AlertDialogContent>

@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+/* NProgress top loader bar */
+#nprogress .bar {
+  background: #7c3aed !important;
+  height: 3px !important;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #7c3aed, 0 0 5px #7c3aed !important;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
 
