@@ -2,6 +2,7 @@ import React from 'react'
 import YouTube from 'react-youtube'
 import ReactMarkdown from 'react-markdown';
 import { HiOutlineBookOpen, HiOutlineCodeBracket, HiOutlinePlayCircle, HiOutlineUser } from 'react-icons/hi2';
+import ChapterQuiz from './ChapterQuiz';
 
 const opts = {
   height: '100%',
@@ -140,6 +141,9 @@ function ChapterContent({chapter, content}) {
           ))}
         </div>
       )}
+
+      {/* Quiz Section */}
+      <ChapterQuiz chapter={chapter} content={content} />
     </div>
   )
 }

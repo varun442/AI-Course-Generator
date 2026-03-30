@@ -74,5 +74,21 @@ const createChatSession = (systemPrompt) => ({
   },
 });
 
+const QUIZ_SYSTEM_PROMPT =
+  `You are a quiz generator for educational courses. Always respond with valid JSON only, no markdown, no explanation.
+The JSON must follow this exact structure:
+{
+  "quiz": [
+    {
+      "question": "string",
+      "options": ["string", "string", "string", "string"],
+      "correctAnswer": number,
+      "explanation": "string"
+    }
+  ]
+}
+Where correctAnswer is the 0-based index of the correct option. Generate exactly 5 questions.`;
+
 export const GenerateCourseLayout_AI = createChatSession(COURSE_LAYOUT_SYSTEM_PROMPT);
 export const GenerateChapterContent_AI = createChatSession(CHAPTER_CONTENT_SYSTEM_PROMPT);
+export const GenerateQuiz_AI = createChatSession(QUIZ_SYSTEM_PROMPT);
