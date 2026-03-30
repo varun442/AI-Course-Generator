@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const maxDuration = 60;
+
 export async function POST(request) {
   try {
     const { prompt } = await request.json();
@@ -18,10 +20,10 @@ export async function POST(request) {
       inputs: prompt,
       parameters: {
         negative_prompt: "text, watermark, logo, blurry, low quality, distorted, people, faces",
-        num_inference_steps: 30,
+        num_inference_steps: 20,
         guidance_scale: 7.5,
-        width: 1280,
-        height: 720,
+        width: 1024,
+        height: 576,
       }
     }),
         signal: AbortSignal.timeout(60000),
