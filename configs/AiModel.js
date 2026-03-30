@@ -1,9 +1,15 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true,
-});
+let _client;
+const getClient = () => {
+  if (!_client) {
+    _client = new OpenAI({
+      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
+      dangerouslyAllowBrowser: true,
+    });
+  }
+  return _client;
+};
 
 const COURSE_LAYOUT_SYSTEM_PROMPT =
   `You are a course curriculum designer. Always respond with valid JSON only, no markdown, no explanation.
@@ -40,7 +46,7 @@ const createChatSession = (systemPrompt) => ({
     let completion;
     try {
       console.log("[AiModel] Sending request to OpenAI...");
-      completion = await client.chat.completions.create({
+      completion = await getClient().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
