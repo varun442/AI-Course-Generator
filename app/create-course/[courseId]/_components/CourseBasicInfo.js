@@ -137,6 +137,7 @@ function CourseBasicInfo({course,refreshData,edit=true}) {
                       Upload Image
                     </div>
                   </label>
+                  {process.env.NEXT_PUBLIC_HOST_NAME?.includes('localhost') && (
                   <button
                     onClick={generateWithAI}
                     disabled={generating || uploading}
@@ -145,6 +146,7 @@ function CourseBasicInfo({course,refreshData,edit=true}) {
                     <HiOutlineSparkles className="text-base" />
                     {generating ? 'Generating...' : 'Generate with AI'}
                   </button>
+                  )}
                 </div>
               )}
             </div>
